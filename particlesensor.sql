@@ -1,7 +1,3 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1deb3
--- https://www.phpmyadmin.net/
---
 -- Host: localhost:3306
 -- Generation Time: Jul 03, 2024 at 11:53 PM
 -- Server version: 8.0.37-0ubuntu0.24.04.1
