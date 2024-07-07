@@ -31,7 +31,5 @@ CREATE TABLE `pms5003` (
   `particles_25um` int NOT NULL,
   `particles_50um` int NOT NULL,
   `particles_100um` int NOT NULL,
-  `analogvalue` int NOT NULL,
-  `analogvolts` int NOT NULL,
   `batteryvolts` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
