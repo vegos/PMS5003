@@ -9,13 +9,13 @@ $dbname = "particlesensor";
 // REPLACE with Database user
 $username = "pmsuser";
 // REPLACE with Database user password
-$password = "enter_password_here";
+$password = "password";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 // Check connection
 
-$api_key_value = "api_key_must_match_ino_code";
+$api_key_value = "api-key";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $api_key = test_input($_POST["api_key"]);
@@ -33,8 +33,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $particles_25um = test_input($_POST["particles_25um"]);
         $particles_50um = test_input($_POST["particles_50um"]);
         $particles_100um = test_input($_POST["particles_100um"]);
-        $analogvalue = test_input($_POST["analogvalue"]);
-        $analogvolts = test_input($_POST["analogvolts"]);
         $batteryvolts = test_input($_POST["batteryvolts"]);
         
         // Create connection
@@ -44,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             die("Connection failed: " . $conn->connect_error);
         } 
         
-        $sql = "INSERT INTO pms5003 (datetime, pm10_standard, pm25_standard, pm100_standard, pm10_env, pm25_env, pm100_env, particles_03um, particles_05um, particles_10um, particles_25um, particles_50um, particles_100um, analogvalue, analogvolts, batteryvolts) VALUES ('" . $datetime . "','" . $pm10_standard . "','" . $pm25_standard . "','" . $pm100_standard . "','" . $pm10_env . "','" . $pm25_env . "','" . $pm100_env . "','" . $particles_03um . "','" . $particles_05um . "','" . $particles_10um . "','" . $particles_25um . "','" . $particles_50um . "','" . $particles_100um . "','" . $analogvalue . "','" . $analogvolts . "','" . $batteryvolts . "')";
+        $sql = "INSERT INTO pms5003 (datetime, pm10_standard, pm25_standard, pm100_standard, pm10_env, pm25_env, pm100_env, particles_03um, particles_05um, particles_10um, particles_25um, particles_50um, particles_100um, batteryvolts) VALUES ('" . $datetime . "','" . $pm10_standard . "','" . $pm25_standard . "','" . $pm100_standard . "','" . $pm10_env . "','" . $pm25_env . "','" . $pm100_env . "','" . $particles_03um . "','" . $particles_05um . "','" . $particles_10um . "','" . $particles_25um . "','" . $particles_50um . "','" . $particles_100um . "','" . $batteryvolts . "')";
         
         if ($result = $conn->query($sql) !== FALSE) {
             echo "New record created successfully";
