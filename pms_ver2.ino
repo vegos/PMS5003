@@ -24,6 +24,7 @@ int analogVolts, batteryVolts;
 
 #define DEBUG true
 
+#define LED 15
 #define SleepTime 60000
 
 #define EveryXTime   300000
@@ -98,23 +99,25 @@ bool AutoConfig()
         if (wstatus == WL_CONNECTED)
         {
 #ifdef DEBUG           
-            Serial.println("WIFI SmartConfig Success");
-            Serial.printf("SSID:%s", WiFi.SSID().c_str());
-            Serial.printf(", PSW:%s\r\n", WiFi.psk().c_str());
-            Serial.print("LocalIP:");
-            Serial.print(WiFi.localIP());
-            Serial.print(" ,GateIP:");
-            Serial.println(WiFi.gatewayIP());
+          Serial.println("WIFI SmartConfig Success");
+          Serial.printf("SSID:%s", WiFi.SSID().c_str());
+          Serial.printf(", PSW:%s\r\n", WiFi.psk().c_str());
+          Serial.print("LocalIP:");
+          Serial.print(WiFi.localIP());
+          Serial.print(" ,GateIP:");
+          Serial.println(WiFi.gatewayIP());
 #endif            
-            return true;
+          return true;
         }
         else
         {
+          digitalWrite(LED, HIGH);
 #ifdef DEBUG           
-            Serial.print("WIFI AutoConfig Waiting......");
-            Serial.println(wstatus);
+          Serial.print("WIFI AutoConfig Waiting......");
+          Serial.println(wstatus);
 #endif
-            delay(1000);            
+          digitalWrite(LED, LOW);
+          delay(1000);          
         }
     }
 #ifdef DEBUG     
@@ -126,6 +129,7 @@ bool AutoConfig()
 //----------------------------------------------------------------------------------------------------------
 
 void setup() {
+  pinMode(LED, OUTPUT);
   // debugging output
   Serial.begin(115200);
 
@@ -138,7 +142,7 @@ void setup() {
   // Autoconfig WiFi etc
   if (!AutoConfig())
   {
-      SmartConfig();
+    SmartConfig();
   }
 
   server.begin();
@@ -233,6 +237,7 @@ void loop() {
 #endif        
         if (c == '\n') {            // if the byte is a newline character
 
+          digitalWrite(LED, HIGH);
           // if the current line is blank, you got two newline characters in a row.
           // that's the end of the client HTTP request, so send a response:
           if (currentLine.length() == 0) {
@@ -309,6 +314,7 @@ void loop() {
             client.println("<BR>");
             client.println("</HTML>");
             client.println();
+            digitalWrite(LED, LOW);
             // break out of the while loop:
             break;
           } else {  // if you got a newline, then clear currentLine:
@@ -320,7 +326,7 @@ void loop() {
       }
     }
     // close the connection:
-    client.stop();
+    client.stop();    
 #ifdef DEBUG     
     Serial.println("Client Disconnected.");
 #endif    
@@ -432,8 +438,8 @@ boolean PostToServer()
   const String apiKeyValue = "api-key";
 
   if(WiFi.status()== WL_CONNECTED){
+    digitalWrite(LED, HIGH);
     HTTPClient http;
-
     http.begin(serverName);
     
     // Specify content-type header
@@ -464,6 +470,7 @@ boolean PostToServer()
 #endif      
       http.end();
       timeforpost = millis();
+      digitalWrite(LED, LOW);
       return true;
     }
     else {
