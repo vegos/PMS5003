@@ -428,8 +428,8 @@ boolean readPMSdata(Stream *s) {
 
 boolean PostToServer()
 {
-  const String serverName = "http://192.168.100.5/post-sensor-data.php";
-  const String apiKeyValue = "58619089-8dcd-444d-b8aa-2803a300471c";
+  const String serverName = "http://ip_of_webserver/post-sensor-data.php";
+  const String apiKeyValue = "api-key";
 
   if(WiFi.status()== WL_CONNECTED){
     HTTPClient http;
