@@ -16,7 +16,7 @@ NetworkServer server(80);
 uint16_t datapm10_standard,datapm25_standard,datapm100_standard,datapm10_env,datapm25_env,datapm100_env,dataparticles_03um,dataparticles_05um,dataparticles_10um,dataparticles_25um,dataparticles_50um,dataparticles_100um;
 long timestarted,timeforpost;
 bool isAwake,SleepSend;
-int analogValue, analogVolts, batteryVolts;
+int analogVolts, batteryVolts;
 
 // Serial Port connections for PMS5003 Sensor
 #define RXD1 16 // To sensor TXD
@@ -28,6 +28,7 @@ int analogValue, analogVolts, batteryVolts;
 
 #define EveryXTime   300000
 
+//----------------------------------------------------------------------------------------------------------
 
 void Sleep()
 {
@@ -36,6 +37,8 @@ void Sleep()
   isAwake = false;
 }
 
+//----------------------------------------------------------------------------------------------------------
+
 void WakeUp()
 {
   uint8_t command[] = { 0x42, 0x4D, 0xE4, 0x00, 0x01, 0x01, 0x74 };
@@ -43,11 +46,15 @@ void WakeUp()
   isAwake = true;
 }
 
+//----------------------------------------------------------------------------------------------------------
+
 void ActiveMode()
 {
   uint8_t command[] = { 0x42, 0x4D, 0xE1, 0x00, 0x01, 0x01, 0x71 };
   Serial1.write(command, sizeof(command));
 }
+
+//----------------------------------------------------------------------------------------------------------
 
 void PassiveMode()
 {
@@ -55,10 +62,7 @@ void PassiveMode()
   Serial1.write(command, sizeof(command));
 }
 
-
-
-
-
+//----------------------------------------------------------------------------------------------------------
 
 void SmartConfig()
 {
@@ -82,6 +86,8 @@ void SmartConfig()
     }
   }
 }
+
+//----------------------------------------------------------------------------------------------------------
 
 bool AutoConfig()
 {
@@ -117,8 +123,8 @@ bool AutoConfig()
     return false;
 }
 
+//----------------------------------------------------------------------------------------------------------
 
-// --------------------------------------------- SETUP ----------------------------------------------
 void setup() {
   // debugging output
   Serial.begin(115200);
@@ -158,8 +164,8 @@ struct pms5003data {
 
 struct pms5003data data;
 
+//----------------------------------------------------------------------------------------------------------
 
-// --------------------------------------------- LOOP ----------------------------------------------
 void loop() {
   if (readPMSdata(&Serial1)) 
   {
@@ -181,7 +187,6 @@ void loop() {
       dataparticles_25um = data.particles_25um;
       dataparticles_50um = data.particles_50um;
       dataparticles_100um = data.particles_100um;
-      analogValue = analogRead(0);
       analogVolts = analogReadMilliVolts(0);
       batteryVolts = analogVolts*2;
     }
@@ -209,9 +214,7 @@ void loop() {
     Serial.print("Particles > 5.0um / 0.1L air: "); Serial.println(dataparticles_50um);
     Serial.print("Particles > 10.0um / 0.1L air: "); Serial.println(dataparticles_100um);
     Serial.println("----------------------------------------------------------------");
-    Serial.print("ADC analog value: "); Serial.println(analogValue);
-    Serial.print("ADC voltage: "); Serial.print(analogVolts); Serial.println("mV");
-    Serial.print("Battery voltage: "); Serial.print(batteryVolts); Serial.println("mV");
+    Serial.print("Battery voltage: "); Serial.print(batteryVolts); Serial.println(" mV");
 #endif      
   }
 
@@ -298,12 +301,9 @@ void loop() {
             client.println("<BR>");
             client.print("<b><font size=-1><font color=\"blue\">Battery</font></b>");
             client.println("<BR>");
-            client.print("ADC analog value: <font color=\"blue\">"); client.print(analogValue);
-            client.println("</FONT><BR>");
-            client.print("ADC voltage: <font color=\"blue\">"); client.print(analogVolts);
-            client.println("</FONT>mV<BR>");
             client.print("Battery voltage: <font color=\"blue\">"); client.print(batteryVolts);
-            client.println("</FONT>mV</FONT><BR>");
+            client.println("</FONT>mV<BR>");
+            client.println("</FONT></FONT>");
             client.println("<BR>");
             client.println("</CENTER>");
             client.println("<BR>");
@@ -370,6 +370,7 @@ if ((millis() - timestarted) > SleepTime)
 */
 }
 
+//----------------------------------------------------------------------------------------------------------
 
 boolean readPMSdata(Stream *s) {
   if (! s->available()) {
@@ -423,10 +424,12 @@ boolean readPMSdata(Stream *s) {
   return true;
 }
 
+//----------------------------------------------------------------------------------------------------------
+
 boolean PostToServer()
 {
-  const String serverName = "http://ip_or_fqdn/post-sensor-data.php";
-  const String apiKeyValue = "apikey_must_match_post-sensor-data.php";
+  const String serverName = "http://192.168.100.5/post-sensor-data.php";
+  const String apiKeyValue = "58619089-8dcd-444d-b8aa-2803a300471c";
 
   if(WiFi.status()== WL_CONNECTED){
     HTTPClient http;
@@ -441,11 +444,19 @@ boolean PostToServer()
                              "&pm100_standard=" + datapm100_standard + "&pm10_env=" + datapm10_env + "&pm25_env=" + datapm25_env + "&pm100_env=" + datapm100_env +
                              "&particles_03um=" + dataparticles_03um + "&particles_05um=" + dataparticles_05um + "&particles_10um=" + dataparticles_10um +
                              "&particles_25um=" + dataparticles_25um + "&particles_50um=" + dataparticles_50um + "&particles_100um=" + dataparticles_100um +
-                             "&analogvalue=" + analogValue + "&analogvolts=" + analogVolts + "&batteryvolts=" + batteryVolts;
+                             "&batteryvolts=" + batteryVolts;
 
     // Send HTTP POST request
     int httpResponseCode = http.POST(httpRequestData);
-             
+     
+    // If you need an HTTP request with a content type: text/plain
+    //http.addHeader("Content-Type", "text/plain");
+    //int httpResponseCode = http.POST("Hello, World!");
+    
+    // If you need an HTTP request with a content type: application/json, use the following:
+    //http.addHeader("Content-Type", "application/json");
+    //int httpResponseCode = http.POST("{\"value1\":\"19\",\"value2\":\"67\",\"value3\":\"78\"}");
+        
     if (httpResponseCode>0) {
 #ifdef DEBUG      
       Serial.print("HTTP Response code: ");
