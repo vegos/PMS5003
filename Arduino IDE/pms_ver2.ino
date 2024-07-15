@@ -8,6 +8,7 @@
   PM2.5 (also known as fine particles) have a diameter of less than 2.5 microns.
   PM10 means the particles have a diameter less than 10 microns, or 100 times smaller than a millimeter.
 
+  Version 2.1
   ©2024, Antonis Maglaras (maglaras@gmail.com)
 */
 
@@ -25,9 +26,10 @@ int analogVolts, batteryVolts;
 #define DEBUG true
 
 #define LED 15
+#define BUTTON 9
 #define SleepTime 60000
 
-#define EveryXTime   300000
+#define EveryXTime 300000
 
 //----------------------------------------------------------------------------------------------------------
 
@@ -67,6 +69,7 @@ void PassiveMode()
 
 void SmartConfig()
 {
+  digitalWrite(LED, HIGH);  
   WiFi.mode(WIFI_STA);
   if (DEBUG) Serial.println("\r\nWait for Smartconfig...");
   WiFi.beginSmartConfig();
@@ -83,6 +86,7 @@ void SmartConfig()
       Serial.printf("SSID:%s\r\n", WiFi.SSID().c_str());
       Serial.printf("PSW:%s\r\n", WiFi.psk().c_str());
 #endif      
+      digitalWrite(LED, LOW);
       break;
     }
   }
@@ -111,12 +115,10 @@ bool AutoConfig()
         }
         else
         {
-          digitalWrite(LED, HIGH);
 #ifdef DEBUG           
           Serial.print("WIFI AutoConfig Waiting......");
           Serial.println(wstatus);
 #endif
-          digitalWrite(LED, LOW);
           delay(1000);          
         }
     }
@@ -130,6 +132,8 @@ bool AutoConfig()
 
 void setup() {
   pinMode(LED, OUTPUT);
+  pinMode(BUTTON, INPUT);
+  digitalWrite(LED, HIGH);
   // debugging output
   Serial.begin(115200);
 
@@ -138,6 +142,8 @@ void setup() {
   
   // Set the resolution to 12 bits (0-4096)
   analogReadResolution(12);
+  delay(250);
+  digitalWrite(LED, LOW);
 
   // Autoconfig WiFi etc
   if (!AutoConfig())
@@ -155,6 +161,7 @@ void setup() {
   delay(1000);
   ActiveMode();
   delay(1000);
+  digitalWrite(LED, LOW);
 }
 
 struct pms5003data {
@@ -332,8 +339,15 @@ void loop() {
 #endif    
   }
 
-  if ((millis() - timeforpost) > EveryXTime)
+  if (((millis() - timeforpost) > EveryXTime) || (digitalRead(BUTTON) == LOW))
   {
+    if (digitalRead(BUTTON) == LOW)
+    {
+      while (digitalRead(BUTTON) == LOW) 
+      {
+        // wait till button is not pressed anymore
+      }
+    }
     if (PostToServer())
     {
 #ifdef DEBUG
@@ -345,35 +359,6 @@ void loop() {
 #endif      
     }
   }
-  
-/* 
-// -- need some finetuning -- not ready yet
-if ((millis() - timestarted) > SleepTime)
-{
-  WakeUp();
-  ActiveMode();
-  timestarted = millis();
-  isAwake = true;
-  SleepSend = false;
-#ifdef DEBUG
-  Serial.println("Wake Up!");
-#endif
-} else {
-  if ((!SleepSend) && ((millis() - timestarted) > 20000))
-  {
-    Sleep();
-    timestarted = millis();
-    SleepSend = true;    
-#ifdef DEBUG
-    Serial.println("Sleep!");
-#endif    
-  }
-  else
-  {
-    // DO NOTHING JUST WAIT
-  }
-}
-*/
 }
 
 //----------------------------------------------------------------------------------------------------------
@@ -434,8 +419,8 @@ boolean readPMSdata(Stream *s) {
 
 boolean PostToServer()
 {
-  const String serverName = "http://ip_of_webserver/post-sensor-data.php";
-  const String apiKeyValue = "api-key";
+  const String serverName = "http://ip.of.server/post-sensor-data.php";
+  const String apiKeyValue = "yourapikey";
 
   if(WiFi.status()== WL_CONNECTED){
     digitalWrite(LED, HIGH);
